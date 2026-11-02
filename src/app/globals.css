@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/* Warna merek Magic Circle Cast (usulan awal, mudah diganti di sini) */
+@theme {
+  --color-ink: #1b1534;
+  --color-ink2: #4a4466;
+  --color-muted: #8a85a3;
+  --color-line: #e6e2f0;
+  --color-plum: #3b2a7a;
+  --color-plum2: #5a44b0;
+  --color-lav: #efeafc;
+  --color-gold: #f2b632;
+  --color-gold2: #fff4d6;
+  --color-coral: #ef6a5b;
+  --color-mint: #2fae8f;
+  --color-paper: #fbfaf7;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Poppins", "Inter", system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
