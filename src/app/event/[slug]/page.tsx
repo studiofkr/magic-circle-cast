@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ambilEvent, ambilPeserta, hitungRsvp } from "@/lib/data";
-import { supabaseSiap } from "@/lib/supabase";
+import { dbSiap } from "@/lib/db";
 import { rentangJam, tanggalPanjang } from "@/lib/format";
 import { LabelStatus, PesanBelumTersambung } from "@/components/ui";
 import { FormRsvp } from "./FormRsvp";
@@ -18,7 +18,7 @@ export default function HalamanEvent({ params }: PageProps<"/event/[slug]">) {
 }
 
 async function IsiEvent({ params }: { params: PageProps<"/event/[slug]">["params"] }) {
-  if (!supabaseSiap) return <PesanBelumTersambung />;
+  if (!dbSiap) return <PesanBelumTersambung />;
   const { slug } = await params;
   const ev = await ambilEvent(slug);
   if (!ev) notFound();

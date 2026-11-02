@@ -72,9 +72,8 @@ export function PesanBelumTersambung() {
     <div className="rounded-2xl border border-gold bg-gold2 p-4 text-sm text-ink">
       <p className="font-semibold">Database belum tersambung.</p>
       <p className="mt-1 text-ink2">
-        Isi <code>NEXT_PUBLIC_SUPABASE_URL</code> dan{" "}
-        <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> (lihat README), lalu muat ulang
-        halaman ini.
+        Isi <code>DATABASE_URL</code> dengan connection string dari Neon (lihat
+        README), lalu muat ulang halaman ini.
       </p>
     </div>
   );

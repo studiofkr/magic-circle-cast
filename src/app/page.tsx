@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { ambilEventMendatang, ambilKota, ambilTemaAktif } from "@/lib/data";
-import { supabaseSiap } from "@/lib/supabase";
+import { dbSiap } from "@/lib/db";
 import { EventKotaKu } from "@/components/EventKotaKu";
 import { PesanBelumTersambung } from "@/components/ui";
 
@@ -57,7 +57,7 @@ async function LabelTema() {
 }
 
 async function BagianEvent() {
-  if (!supabaseSiap) return <PesanBelumTersambung />;
+  if (!dbSiap) return <PesanBelumTersambung />;
   const [kota, event] = await Promise.all([ambilKota(), ambilEventMendatang()]);
   return <EventKotaKu kota={kota} event={event} />;
 }

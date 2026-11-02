@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { sql } from "@/lib/db";
 
 export type HasilRsvp =
   | { tahap: "awal" }
@@ -20,7 +20,7 @@ export type HasilRsvp =
  * aksi ini tidak bisa dipakai untuk melewati batasan apa pun.
  */
 export async function kirimRsvp(_prev: HasilRsvp, form: FormData): Promise<HasilRsvp> {
-  if (!supabase) return { tahap: "gagal", pesan: "Database belum tersambung." };
+  if (!sql) return { tahap: "gagal", pesan: "Database belum tersambung." };
 
   const teks = (k: string) => String(form.get(k) ?? "").trim().slice(0, 200);
   const nama = teks("nama");
@@ -29,17 +29,22 @@ export async function kirimRsvp(_prev: HasilRsvp, form: FormData): Promise<Hasil
     return { tahap: "gagal", pesan: "Nama dan email wajib diisi." };
   }
 
-  const { data, error } = await supabase.rpc("daftar_rsvp", {
-    p_event_id: teks("event_id"),
-    p_nama: nama,
-    p_email: email,
-    p_whatsapp: teks("whatsapp") || null,
-    p_bidang_karya: teks("bidang_karya") || null,
-    p_izin_tampil: form.get("izin_tampil") === "on",
-    p_kabari_kota: form.get("kabari_kota") === "on",
-  });
+  const eventId = teks("event_id");
+  if (!/^[0-9a-f-]{36}$/i.test(eventId)) {
+    return { tahap: "gagal", pesan: "Event tidak dikenali." };
+  }
 
-  if (error) {
+  let data: unknown;
+  try {
+    const [baris] = await sql`
+      select daftar_rsvp(
+        ${eventId}::uuid, ${nama}, ${email},
+        ${teks("whatsapp") || null}, ${teks("bidang_karya") || null},
+        ${form.get("izin_tampil") === "on"}, ${form.get("kabari_kota") === "on"}
+      ) as hasil
+    `;
+    data = baris.hasil;
+  } catch (error) {
     console.error("daftar_rsvp gagal", error);
     return { tahap: "gagal", pesan: "Maaf, pendaftaran gagal. Coba lagi sebentar." };
   }

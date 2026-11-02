@@ -1,7 +1,7 @@
 -- =====================================================================
 -- Data CONTOH untuk mencoba web. Semua nama orang, venue, dan alamat
 -- di sini fiktif. Hapus atau ganti sebelum peluncuran.
--- Jalankan setelah file migrasi: Dashboard → SQL Editor → tempel → Run.
+-- Jalankan setelah file migrasi: Neon → SQL Editor → tempel → Run.
 -- =====================================================================
 
 insert into kota (nama, slug, lat, lng, zona_waktu, status) values

@@ -2,7 +2,7 @@
 
 Web event Magic Circle Cast: talk kreatif bulanan di banyak kota, dengan satu tema yang sama tiap bulan.
 
-Dibangun dengan **Next.js** (App Router) + **Supabase** (database & keamanan), di-deploy ke **Vercel**.
+Dibangun dengan **Next.js** (App Router) + **Postgres di Neon**, di-deploy ke **Vercel**.
 
 ## Yang sudah ada
 
@@ -14,15 +14,15 @@ Dibangun dengan **Next.js** (App Router) + **Supabase** (database & keamanan), d
 
 - **Pilih kota manual.** Tidak memakai GPS; pilihan disimpan di browser pengunjung.
 - **RSVP tanpa akun.** Satu email satu kursi. Kuota penuh → otomatis waitlist. Yang batal → waitlist teratas naik.
-- **Data pribadi aman.** Email dan nomor WhatsApp peserta/relawan tidak bisa dibaca dari web (Row Level Security).
+- **Data pribadi aman.** Database hanya diakses dari kode server dengan `DATABASE_URL` rahasia. Email dan nomor WhatsApp peserta/relawan tidak pernah dikirim ke browser.
 
 ## Menyiapkan database (sekali saja)
 
-1. Buka Supabase → project Magic Circle Cast → **SQL Editor**.
-2. Tempel isi `supabase/migrations/20261102000000_skema_awal.sql`, klik **Run**.
-3. (Opsional, untuk mencoba) tempel isi `supabase/seed.sql`, klik **Run**. Ini mengisi data **contoh** (nama orang & venue fiktif). Event Bandung sengaja berkuota 2 supaya waitlist bisa dicoba.
+1. Buka Neon → project **magic-circle-cast** → **SQL Editor**.
+2. Tempel isi `db/migrations/20261102000000_skema_awal.sql`, klik **Run**.
+3. (Opsional, untuk mencoba) tempel isi `db/seed.sql`, klik **Run**. Ini mengisi data **contoh** (nama orang & venue fiktif). Event Bandung sengaja berkuota 2 supaya waitlist bisa dicoba.
 
-Admin mengelola data lewat **Table Editor** di dashboard Supabase:
+Admin mengelola data lewat **Tables** di dashboard Neon:
 ubah `status` event menjadi `rsvp_buka` untuk membuka pendaftaran, lihat peserta di tabel `rsvp`, dsb.
 
 ### Status event
@@ -38,14 +38,13 @@ ubah `status` event menjadi `rsvp_buka` untuk membuka pendaftaran, lihat peserta
 
 ## Environment variable
 
-Salin `.env.example` → `.env.local` (lokal) atau isi di Vercel:
+Hanya satu, dan **rahasia**:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+DATABASE_URL=postgresql://...-pooler...neon.tech/neondb?sslmode=require
 ```
 
-Kunci **service_role** tidak dipakai dan tidak boleh ditaruh di repo atau Vercel.
+Ambil dari Neon → **Connect** → pilih *Pooled connection*. Isi di Vercel → Project → Settings → Environment Variables (atau `.env.local` untuk di laptop; lihat `.env.example`). Jangan diberi awalan `NEXT_PUBLIC_` dan jangan di-commit.
 
 ## Menjalankan di laptop (opsional)
 
@@ -61,10 +60,11 @@ Buka http://localhost:3000.
 ```
 src/app/                 halaman (beranda, jadwal, detail event + aksi RSVP)
 src/components/          header, pilih kota, daftar event, komponen kecil
-src/lib/data.ts          semua pengambilan data dari Supabase
+src/lib/db.ts            koneksi database (server saja)
+src/lib/data.ts          semua query baca data
 src/lib/format.ts        format tanggal/jam per zona (WIB/WITA/WIT), jarak antar kota
-supabase/migrations/     skema database, keamanan, fungsi RSVP
-supabase/seed.sql        data contoh
+db/migrations/           skema database & fungsi RSVP
+db/seed.sql              data contoh
 ```
 
 ## Belum dikerjakan

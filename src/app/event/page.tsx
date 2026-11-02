@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ambilEventArsip, ambilEventMendatang, ambilKota } from "@/lib/data";
-import { supabaseSiap } from "@/lib/supabase";
+import { dbSiap } from "@/lib/db";
 import { DaftarEvent } from "@/components/DaftarEvent";
 import { PesanBelumTersambung } from "@/components/ui";
 
@@ -22,7 +22,7 @@ export default function HalamanJadwal() {
 }
 
 async function Isi() {
-  if (!supabaseSiap) return <PesanBelumTersambung />;
+  if (!dbSiap) return <PesanBelumTersambung />;
   const [kota, mendatang, arsip] = await Promise.all([
     ambilKota(),
     ambilEventMendatang(),

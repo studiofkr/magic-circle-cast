@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Magic Circle Cast — skema awal database
--- Jalankan sekali di Supabase: Dashboard → SQL Editor → tempel → Run.
+-- Jalankan sekali di Neon: project → SQL Editor → tempel → Run.
 -- =====================================================================
 
 create extension if not exists pgcrypto;
@@ -156,39 +156,16 @@ create table event_kru (
 );
 
 -- =====================================================================
--- Keamanan: Row Level Security
--- Publik (anon) hanya boleh MEMBACA data acara, dan hanya boleh MENGISI
--- form relawan / minat kota. RSVP lewat fungsi daftar_rsvp() di bawah.
--- Admin memakai dashboard Supabase (tidak terkena RLS).
+-- Keamanan
+-- Web mengakses database HANYA dari kode server (DATABASE_URL rahasia,
+-- tidak pernah dikirim ke browser). Halaman publik hanya memakai
+-- query baca event/kota/tema dan fungsi-fungsi aman di bawah, jadi
+-- email & nomor WhatsApp peserta/relawan tidak pernah keluar ke web.
+-- Admin mengelola data lewat dashboard Neon (Tables / SQL Editor).
 -- =====================================================================
-alter table kota          enable row level security;
-alter table venue         enable row level security;
-alter table tema          enable row level security;
-alter table pembicara     enable row level security;
-alter table event         enable row level security;
-alter table rsvp          enable row level security;
-alter table relawan       enable row level security;
-alter table minat_kota    enable row level security;
-alter table partner       enable row level security;
-alter table event_partner enable row level security;
-alter table event_kru     enable row level security;
-
-create policy "publik baca kota"      on kota          for select using (true);
-create policy "publik baca venue"     on venue         for select using (true);
-create policy "publik baca tema"      on tema          for select using (true);
-create policy "publik baca pembicara" on pembicara     for select using (true);
-create policy "publik baca partner"   on partner       for select using (true);
-create policy "publik baca ep"        on event_partner for select using (true);
-create policy "publik baca event"     on event         for select using (status <> 'draft');
-
-create policy "publik daftar relawan" on relawan for insert to anon, authenticated
-  with check (status = 'baru' and catatan_admin is null);
-create policy "publik minat kota"     on minat_kota for insert to anon, authenticated
-  with check (true);
--- rsvp & event_kru: sengaja TIDAK ada policy untuk publik.
 
 -- =====================================================================
--- Fungsi publik (aman: hanya mengembalikan data yang boleh tampil)
+-- Fungsi untuk halaman publik (hanya mengembalikan data yang boleh tampil)
 -- =====================================================================
 
 -- Jumlah kursi terisi (terdaftar + hadir) dan antrean waitlist
@@ -359,14 +336,3 @@ begin
       limit greatest(kuota_ev - terisi, 0)
    );
 end $$;
-
--- Hak akses fungsi: publik hanya boleh memanggil fungsi yang aman.
-revoke all on function hitung_rsvp(uuid), peserta_publik(uuid), tim_kota(uuid), kru_event(uuid),
-                       buat_kode_checkin(), daftar_rsvp(uuid,text,text,text,text,boolean,boolean),
-                       batal_rsvp(text,text), naikkan_waitlist(uuid)
-  from public;
-grant execute on function hitung_rsvp(uuid), peserta_publik(uuid), tim_kota(uuid), kru_event(uuid),
-                          daftar_rsvp(uuid,text,text,text,text,boolean,boolean), batal_rsvp(text,text)
-  to anon, authenticated;
--- Supabase memberi hak eksekusi bawaan ke anon/authenticated; cabut untuk fungsi internal.
-revoke execute on function buat_kode_checkin(), naikkan_waitlist(uuid) from anon, authenticated;
